@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact | NovaCart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+    <main class="container py-5">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <h2 class="h3 fw-bold mb-3">Get in touch</h2>
+          <p class="text-muted">We’d love to hear from you. Reach us anytime for support, partnerships, or product questions.</p>
+          <ul class="list-unstyled">
+            <li class="mb-3"><i class="fa-solid fa-location-dot me-2"></i>123 Market Street, Accra, Ghana</li>
+            <li class="mb-3"><i class="fa-solid fa-phone me-2"></i>+233 20 123 4567</li>
+            <li class="mb-3"><i class="fa-solid fa-envelope me-2"></i>hello@novacart.com</li>
+          </ul>
+          <div class="ratio ratio-16x9 rounded-4 overflow-hidden">
+            <iframe title="Google Maps placeholder" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.123!2d-0.1870!3d5.6037!2m3!1f0!2f0!3f0!3m2!1m1!2s!5e0!3m2!1sen!2sgh!4v1710000000000" loading="lazy"></iframe>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm p-4">
+            <form id="contact-form" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="contact-name">Name</label><input id="contact-name" class="form-control" required /></div>
+                <div class="col-md-6"><label class="form-label" for="contact-email">Email</label><input id="contact-email" type="email" class="form-control" required /></div>
+                <div class="col-12"><label class="form-label" for="contact-message">Message</label><textarea id="contact-message" class="form-control" rows="5" required></textarea></div>
+              </div>
+              <button class="btn btn-primary mt-4" type="submit">Send message</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer id="site-footer"></footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
