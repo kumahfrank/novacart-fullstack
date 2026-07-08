@@ -23,6 +23,10 @@ async function createApp() {
   app.use(express.json());
   app.use(express.static(path.join(__dirname, 'docs')));
 
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
   app.get('/api/products', async (req, res) => {
     const products = await all('SELECT * FROM products ORDER BY id');
     res.json({ products });
@@ -198,14 +202,28 @@ async function createApp() {
 }
 
 function startServer(port = process.env.PORT || 3000) {
-  return createApp().then((app) => app.listen(port));
+  return createApp().then((app) => {
+    return new Promise((resolve, reject) => {
+      const host = process.env.HOST || '0.0.0.0';
+      const server = app.listen(Number(port), host, () => {
+        console.log(`NovaCart backend running on http://${host}:${port}`);
+        resolve(server);
+      });
+
+      server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+          console.error(`Port ${port} is already in use. Please stop the other process or set a different PORT.`);
+        }
+        reject(error);
+      });
+    });
+  });
 }
 
 if (require.main === module) {
-  startServer().then((server) => {
-    server.on('listening', () => {
-      console.log('NovaCart backend running on http://localhost:3000');
-    });
+  startServer().catch((error) => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
   });
 }
 
