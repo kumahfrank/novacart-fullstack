@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | NovaCart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="container py-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 fw-bold mb-1">Admin dashboard</h1>
+          <p class="text-muted mb-0">Track catalog performance, orders, and fulfillment from one place.</p>
+        </div>
+        <a href="/admin.html" class="btn btn-primary">Manage products</a>
+      </div>
+
+      <div class="row g-4 mb-4" id="dashboard-stats"></div>
+
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h5 fw-bold mb-0">Order pipeline</h2>
+              <span class="text-muted small">Live order activity</span>
+            </div>
+            <div id="pipeline-chart" class="mb-3"></div>
+            <div id="orders-list" class="table-responsive"></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm p-4">
+            <h2 class="h6 fw-bold">Quick actions</h2>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2"><a href="/admin.html">Manage products</a></li>
+              <li class="mb-2"><a href="/admin-login.html">Switch admin account</a></li>
+              <li><a href="/">Return to store</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      async function loadDashboard() {
+        const token = localStorage.getItem('novacart.adminToken');
+        if (!token) {
+          window.location.href = '/admin-login.html';
+          return;
+        }
+
+        const statsResponse = await fetch('/api/admin/dashboard/stats', { headers: { Authorization: `Bearer ${token}` } });
+        const statsPayload = await statsResponse.json();
+        const stats = statsPayload.stats || {};
+
+        document.getElementById('dashboard-stats').innerHTML = `
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3">
+              <div class="text-muted small">Products</div>
+              <div class="display-6 fw-bold">${stats.totalProducts || 0}</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3">
+              <div class="text-muted small">Orders</div>
+              <div class="display-6 fw-bold">${stats.totalOrders || 0}</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3">
+              <div class="text-muted small">Pending</div>
+              <div class="display-6 fw-bold">${stats.pendingOrders || 0}</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3">
+              <div class="text-muted small">Revenue</div>
+              <div class="display-6 fw-bold">$${Number(stats.revenue || 0).toFixed(2)}</div>
+            </div>
+          </div>
+        `;
+
+        const total = Number(stats.totalOrders || 0);
+        const pending = Number(stats.pendingOrders || 0);
+        const shipped = Number(stats.shippedOrders || 0);
+        const pipeline = document.getElementById('pipeline-chart');
+        pipeline.innerHTML = `
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100">
+                <div class="fw-semibold mb-2">Pending</div>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar bg-warning" style="width: ${total ? (pending / total) * 100 : 0}%"></div>
+                </div>
+                <div class="small text-muted mt-2">${pending} orders waiting</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100">
+                <div class="fw-semibold mb-2">Shipped</div>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar bg-success" style="width: ${total ? (shipped / total) * 100 : 0}%"></div>
+                </div>
+                <div class="small text-muted mt-2">${shipped} orders shipped</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100">
+                <div class="fw-semibold mb-2">Inventory</div>
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar bg-primary" style="width: ${stats.totalProducts ? Math.min(100, (stats.totalProducts / 10) * 100) : 0}%"></div>
+                </div>
+                <div class="small text-muted mt-2">${stats.totalProducts || 0} products listed</div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const ordersResponse = await fetch('/api/admin/orders', { headers: { Authorization: `Bearer ${token}` } });
+        const ordersPayload = await ordersResponse.json();
+        const orders = ordersPayload.orders || [];
+
+        const ordersList = document.getElementById('orders-list');
+        if (!orders.length) {
+          ordersList.innerHTML = '<div class="alert alert-info mb-0">No orders yet.</div>';
+          return;
+        }
+
+        ordersList.innerHTML = `
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orders.map(order => `
+                <tr>
+                  <td>
+                    <div class="fw-semibold">${order.customerName}</div>
+                    <div class="small text-muted">${order.email}</div>
+                  </td>
+                  <td><span class="badge bg-light text-dark">${order.status}</span></td>
+                  <td>$${Number(order.total).toFixed(2)}</td>
+                  <td>
+                    <select class="form-select form-select-sm order-status-select" data-order-id="${order.id}">
+                      <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                      <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                      <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                      <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                    </select>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+        document.querySelectorAll('.order-status-select').forEach(select => {
+          select.addEventListener('change', async (event) => {
+            const orderId = event.target.getAttribute('data-order-id');
+            await fetch(`/api/admin/orders/${orderId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ status: event.target.value })
+            });
+            loadDashboard();
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+  </body>
+</html>
